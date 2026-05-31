@@ -1,12 +1,27 @@
 include(GetPlatformInfo)
 
 if (OS_IS_WIN AND (NOT MINGW))
-    find_path(SNDFILE_INCDIR sndfile.h PATHS ${DEPENDENCIES_INC};)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
-    find_library(SNDFILE_LIB NAMES sndfile libsndfile-1 PATHS ${DEPENDENCIES_LIB_DIR} NO_DEFAULT_PATH)
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
-    find_library(SNDFILE_DLL NAMES sndfile libsndfile-1 PATHS ${DEPENDENCIES_LIB_DIR} NO_DEFAULT_PATH)
-    message(STATUS "Found sndfile DLL: ${SNDFILE_DLL}")
+    if (MUSE_USE_VCPKG_DEPS)
+        find_package(SndFile REQUIRED)
+        set(SNDFILE_LIB SndFile::sndfile)
+
+        if (DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
+            find_file(SNDFILE_DLL
+                NAMES libsndfile-1.dll sndfile.dll
+                PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin
+                NO_DEFAULT_PATH
+            )
+        endif()
+
+        message(STATUS "Found sndfile via vcpkg")
+    else()
+        find_path(SNDFILE_INCDIR sndfile.h PATHS ${DEPENDENCIES_INC};)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+        find_library(SNDFILE_LIB NAMES sndfile libsndfile-1 PATHS ${DEPENDENCIES_LIB_DIR} NO_DEFAULT_PATH)
+        set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll")
+        find_library(SNDFILE_DLL NAMES sndfile libsndfile-1 PATHS ${DEPENDENCIES_LIB_DIR} NO_DEFAULT_PATH)
+        message(STATUS "Found sndfile DLL: ${SNDFILE_DLL}")
+    endif()
 
 elseif (OS_IS_WASM)
     set(LIBSND_PATH "" CACHE PATH "Path to libsnd sources")
@@ -100,7 +115,9 @@ else()
     endif()
 endif()
 
-if (SNDFILE_INCDIR)
+if (MUSE_USE_VCPKG_DEPS AND OS_IS_WIN AND (NOT MINGW))
+    message(STATUS "Using sndfile from vcpkg")
+elseif (SNDFILE_INCDIR)
     message(STATUS "Found sndfile: ${SNDFILE_LIB} ${SNDFILE_INCDIR}")
 else ()
     message(FATAL_ERROR "Could not find: sndfile")
