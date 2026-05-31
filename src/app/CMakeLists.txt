@@ -339,6 +339,11 @@ if (OS_IS_WIN)
         install(FILES ${SNDFILE_DLL} DESTINATION bin)
     endif()
 
+    if (MUSE_USE_VCPKG_DEPS AND TARGET ZLIB::ZLIB)
+        # For shared zlib, TARGET_FILE resolves to z.dll/zd.dll per config.
+        install(FILES $<TARGET_FILE:ZLIB::ZLIB> DESTINATION bin)
+    endif()
+
     if (WIN_PORTABLE)
         # deploy the files and directory structure needed for the PortableApps.com format
         install(DIRECTORY ${PROJECT_SOURCE_DIR}/buildscripts/packaging/Windows/PortableApps/App DESTINATION ${CMAKE_INSTALL_PREFIX}/../..)
