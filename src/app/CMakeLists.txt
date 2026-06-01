@@ -339,9 +339,18 @@ if (OS_IS_WIN)
         install(FILES ${SNDFILE_DLL} DESTINATION bin)
     endif()
 
-    if (MUSE_USE_VCPKG_DEPS AND TARGET ZLIB::ZLIB)
-        # For shared zlib, TARGET_FILE resolves to z.dll/zd.dll per config.
-        install(FILES $<TARGET_FILE:ZLIB::ZLIB> DESTINATION bin)
+    if (MUSE_USE_VCPKG_DEPS)
+        find_package(ZLIB REQUIRED)
+        if (DEFINED VCPKG_INSTALLED_DIR AND DEFINED VCPKG_TARGET_TRIPLET)
+            find_file(ZLIB_DLL
+                NAMES z.dll zd.dll
+                PATHS ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin
+                NO_DEFAULT_PATH
+            )
+            if (ZLIB_DLL)
+                install(FILES ${ZLIB_DLL} DESTINATION bin)
+            endif()
+        endif()
     endif()
 
     if (WIN_PORTABLE)
