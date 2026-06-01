@@ -6,6 +6,6 @@ FOR /f "usebackq tokens=*" %%i in (`%VSWHERE% -latest -products * -requires Micr
   SET VS_INSTALL_DIR=%%i
 )
 ECHO "VS_INSTALL_DIR: %VS_INSTALL_DIR%"
-CALL "%VS_INSTALL_DIR%\VC\Auxiliary\Build\vcvars64.bat"
+CALL "%VS_INSTALL_DIR%\VC\Auxiliary\Build\vcvarsarm64.bat"
 
 bash ./ninja_build.sh %*
